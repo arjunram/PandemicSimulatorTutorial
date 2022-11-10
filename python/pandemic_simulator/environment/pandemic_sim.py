@@ -48,6 +48,8 @@ class PandemicSim:
     _persons: Sequence[Person]
     _state: PandemicSimState
 
+    _sim_compliance: float
+
     def __init__(self,
                  locations: Sequence[Location],
                  persons: Sequence[Person],
@@ -57,6 +59,7 @@ class PandemicSim:
                  new_time_slot_interval: SimTimeInterval = SimTimeInterval(day=1),
                  infection_update_interval: SimTimeInterval = SimTimeInterval(day=1),
                  person_routine_assignment: Optional[PersonRoutineAssignment] = None,
+                 sim_compliance: float = 1.0,
                  infection_threshold: int = 0):
         """
         :param locations: A sequence of Location instances.
@@ -93,7 +96,7 @@ class PandemicSim:
         self._hospital_ids = [loc.id for loc in locations if isinstance(loc, Hospital)]
 
         self._persons = persons
-
+        self._sim_compliance = sim_compliance
         # assign routines
         if person_routine_assignment is not None:
             for _loc in person_routine_assignment.required_location_types:
@@ -112,6 +115,7 @@ class PandemicSim:
             global_location_summary=self._registry.global_location_summary,
             sim_time=SimTime(),
             regulation_stage=0,
+            compliance_prob=self._sim_compliance,
             infection_above_threshold=False
         )
 
@@ -158,6 +162,7 @@ class PandemicSim:
                            pandemic_testing=pandemic_testing,
                            contact_tracer=contact_tracer,
                            infection_threshold=sim_opts.infection_threshold,
+                           sim_compliance=sim_config.regulation_compliance_prob,
                            person_routine_assignment=sim_config.person_routine_assignment)
 
     @property
@@ -268,8 +273,10 @@ class PandemicSim:
             location.sync(self._state.sim_time)
         self._registry.update_location_specific_information()
 
+        # SPAR the compliance probability has to be updated before this step
         # call person steps (randomize order)
         for i in self._numpy_rng.randint(0, len(self._persons), len(self._persons)):
+            self._persons[i]._regulation_compliance_prob = self._sim_compliance
             self._persons[i].step(self._state.sim_time, self._contact_tracer)
 
         # update person contacts
@@ -402,5 +409,6 @@ class PandemicSim:
                                                     num_tests=0),
             sim_time=SimTime(),
             regulation_stage=0,
+            compliance_prob=1.0,
             infection_above_threshold=False,
         )

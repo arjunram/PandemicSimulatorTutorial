@@ -135,8 +135,11 @@ class BasePerson(Person):
             if self._state.current_location in self._hospital_ids:
                 self.enter_location(self.home)
                 return None
-
+        #print(self._regulation_compliance_prob)
         comply_to_regulation = self._numpy_rng.uniform() < self._regulation_compliance_prob
+        #if not comply_to_regulation:
+        #    print('Not gonna work')
+        # What I need to change
         if (
                 not self._registry.get_person_quarantined_state(self._id) and comply_to_regulation and
 

@@ -25,12 +25,13 @@ class PlotType:
     location_visitor_visits: str = 'location_visitor_visits'
     infection_source = 'infection_source'
     cumulative_reward = 'cumulative_reward'
-
+    compliances = 'compliances'
     @staticmethod
     def plot_order() -> List[str]:
+        #return [PlotType.global_infection_summary, PlotType.stages, PlotType.infection_source]
         return [PlotType.global_infection_summary, PlotType.global_testing_summary, PlotType.critical_summary,
                 PlotType.stages, PlotType.location_assignee_visits, PlotType.location_visitor_visits,
-                PlotType.infection_source, PlotType.cumulative_reward]
+                PlotType.infection_source, PlotType.cumulative_reward, PlotType.compliances]
 
 
 class BaseMatplotLibViz(PandemicViz):
@@ -45,6 +46,7 @@ class BaseMatplotLibViz(PandemicViz):
     _gts: List[np.ndarray]
     _stages: List[np.ndarray]
     _rewards: List[float]
+    _compliances: List[float]
 
     _gis_legend: List[str]
     _critical_index: int
@@ -98,9 +100,10 @@ class BaseMatplotLibViz(PandemicViz):
     def plot_gis(self, ax: Optional[Axes] = None, **kwargs: Any) -> None:
         ax = ax or plt.gca()
         gis = np.vstack(self._gis).squeeze()
-        ax.plot(gis)
+        #breakpoint()
+        ax.plot(gis[:,0:3])
         ax.legend(self._gis_legend, loc=1)
-        ax.set_ylim(-0.1, self._num_persons + 1)
+        #ax.set_ylim(-0.1, self._num_persons + 1)
         ax.set_title('Global Infection Summary')
         ax.set_xlabel('time (days)')
         ax.set_ylabel('persons')
@@ -259,7 +262,7 @@ class SimViz(BaseMatplotLibViz):
 
 class GymViz(BaseMatplotLibViz):
     _rewards: List[float]
-
+    _compliances: List[float]
     def __init__(self, num_persons: int, max_hospital_capacity: Optional[int] = None):
         """
         :param num_persons: number of persons in the environment
@@ -267,6 +270,7 @@ class GymViz(BaseMatplotLibViz):
         """
         super().__init__(num_persons=num_persons, max_hospital_capacity=max_hospital_capacity)
         self._rewards = []
+        self._compliances = []
 
     def plot_cumulative_reward(self, ax: Optional[Axes] = None, **kwargs: Any) -> None:
         ax = ax or plt.gca()
@@ -274,10 +278,27 @@ class GymViz(BaseMatplotLibViz):
         ax.set_title('Cumulative Reward')
         ax.set_xlabel('time (days)')
 
+    def plot_compliances(self, ax: Optional[Axes] = None, **kwargs: Any) -> None:
+        ax = ax or plt.gca()
+        ax.plot(self._compliances)
+        ax.set_title('Compliances')
+        ax.set_xlabel('time (days)')
+
     def record(self, data: Any) -> None:
         if isinstance(data, tuple):
             obs, reward = data
             self._rewards.append(reward)
+            #self._compliances.append(compliance)
+        else:
+            obs = data
+        assert isinstance(obs, PandemicObservation)
+        self.record_obs(obs)
+
+    def record_compliance(self, data: Any) -> None:
+        if isinstance(data, tuple):
+            obs, reward, compliance = data
+            self._rewards.append(reward)
+            self._compliances.append(compliance)
         else:
             obs = data
         assert isinstance(obs, PandemicObservation)

@@ -84,7 +84,7 @@ class PandemicGymEnv(gym.Env):
         :param non_essential_business_location_ids: an ordered list of non-essential business location ids
         """
         sim = PandemicSim.from_config(sim_config, sim_opts)
-
+        #obs_history_size = 5
         if sim_config.max_hospital_capacity == -1:
             raise Exception("Nothing much to optimise if max hospital capacity is -1.")
 
@@ -123,6 +123,10 @@ class PandemicGymEnv(gym.Env):
     @property
     def last_reward(self) -> float:
         return self._last_reward
+
+    @property
+    def obs_history_size(self) -> int:
+        return self._obs_history_size
 
     def step(self, action: int) -> Tuple[PandemicObservation, float, bool, Dict]:
         assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))

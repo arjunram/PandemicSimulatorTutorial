@@ -29,6 +29,7 @@ def simple_worker_loop_with_routines() -> None:
         home=home.id,  # specify the home_id that person is assigned to
         work=work.id,  # specify the id of the person's workplace
         work_time=work.get_worker_work_time(),  # assign work time for the person
+        regulation_compliance_prob=0.8,
     )
 
     # setup person routines

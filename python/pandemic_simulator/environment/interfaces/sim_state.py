@@ -41,6 +41,9 @@ class PandemicSimState:
     """A boolean that is set to True if the infection goes above a set threshold. The threshold is set in the pandemic
     sim"""
 
+    compliance_prob: float
+    """Probability of people complying to the regulations"""
+
     regulation_stage: int
     """The last executed regulation stage"""
 

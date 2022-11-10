@@ -32,7 +32,7 @@ class PandemicSimOpts:
     retest_rate: float = 0.033
     """Probability of a previously tested-positive person to get retested again"""
 
-    sim_steps_per_regulation: int = 24
+    sim_steps_per_regulation: int = 20
     """Number of simulation steps for each regulation"""
 
     use_contact_tracer: bool = False
